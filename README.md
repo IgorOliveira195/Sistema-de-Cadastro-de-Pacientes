@@ -8,27 +8,48 @@ No backend usei Laravel 12 com Sanctum pra autenticação via token Bearer. No f
 
 ## Como rodar (Docker)
 
-Você só precisa ter o Docker instalado. Clone o repositório e copie o arquivo de ambiente:
+Você só precisa ter o Docker instalado.
 
+### 1. Clonar o repositório
+
+```bash
+git clone https://github.com/IgorOliveira195/Sistema-de-Cadastro-de-Pacientes.git
+cd Sistema-de-Cadastro-de-Pacientes
+```
+
+### 2. Criar o `.env` a partir do `.env.example` (obrigatório)
+
+O arquivo `backend/.env` **não vai pro Git** — cada máquina precisa criar o seu. Sem ele o `docker compose up` vai falhar.
+
+Dentro da pasta do projeto, copie o exemplo:
+
+**Linux / Mac / Git Bash:**
 ```bash
 cp backend/.env.example backend/.env
 ```
 
-O `.env.example` já vem configurado pro Docker (`DB_HOST=db`, credenciais do banco, `APP_URL`, `FRONTEND_URL`, etc.). Se mudar usuário ou senha do banco ali, precisa ajustar também no `docker-compose.yml` (serviço `db`).
+**Windows (PowerShell ou CMD):**
+```powershell
+copy backend\.env.example backend\.env
+```
 
-Depois é só subir:
+O `.env.example` já vem configurado pro Docker (`DB_HOST=db`, credenciais do banco, `APP_URL`, `FRONTEND_URL`, etc.). Na prática você só duplica o arquivo e renomeia pra `.env`. Se mudar usuário ou senha do banco ali, precisa ajustar também no `docker-compose.yml` (serviço `db`).
+
+### 3. Subir os containers
 
 ```bash
 docker compose up -d --build
 ```
 
-Na primeira vez, gera a chave da aplicação:
+### 4. Gerar a chave da aplicação (primeira vez)
 
 ```bash
 docker compose exec app php artisan key:generate
 ```
 
-E roda o build do frontend (o nginx serve os arquivos de `frontend/dist/`):
+### 5. Build do frontend
+
+O nginx serve os arquivos de `frontend/dist/`, então precisa compilar:
 
 ```bash
 docker compose exec frontend npm run build
