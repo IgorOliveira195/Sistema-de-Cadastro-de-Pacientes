@@ -6,7 +6,8 @@ until php -r "new PDO('mysql:host=${DB_HOST};port=${DB_PORT:-3306}', '${DB_USERN
   sleep 2
 done
 
-if [ ! -d vendor ]; then
+if [ ! -f vendor/autoload.php ]; then
+  echo "Instalando dependências PHP..."
   composer install --no-interaction --prefer-dist --optimize-autoloader
 fi
 
