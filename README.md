@@ -1,0 +1,89 @@
+# ConectaSUS — Cadastro de Pacientes
+
+Sistema desenvolvido para o processo seletivo da ConectaSUS. A ideia é bem direta: uma API em Laravel para gerenciar pacientes e endereços, e um frontend em Vue.js 2 pra usar no dia a dia.
+
+No backend usei Laravel 12 com Sanctum pra autenticação via token Bearer. No frontend, Vue 2 com Vuex, VeeValidate, máscaras de input e integração com a API do ViaCEP. Tudo roda com Docker — nginx na porta 8080 servindo a SPA e repassando as chamadas da API pro PHP-FPM.
+
+---
+
+## Como rodar (Docker)
+
+Você só precisa ter o Docker instalado. Clone o repositório e copie o arquivo de ambiente:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+O `.env.example` já vem configurado pro Docker (`DB_HOST=db`, credenciais do banco, `APP_URL`, `FRONTEND_URL`, etc.). Se mudar usuário ou senha do banco ali, precisa ajustar também no `docker-compose.yml` (serviço `db`).
+
+Depois é só subir:
+
+```bash
+docker compose up -d --build
+```
+
+Na primeira vez, gera a chave da aplicação:
+
+```bash
+docker compose exec app php artisan key:generate
+```
+
+E roda o build do frontend (o nginx serve os arquivos de `frontend/dist/`):
+
+```bash
+docker compose exec frontend npm run build
+```
+
+As migrations e o seed rodam sozinhos quando o banco tá vazio — o entrypoint do container `app` cuida disso. Se precisar rodar de novo manualmente:
+
+```bash
+docker compose exec app php artisan migrate --seed
+```
+
+Pra zerar tudo e popular de novo: `docker compose exec app php artisan migrate:fresh --seed`
+
+Abre http://localhost:8080 e entra com:
+
+- **E-mail:** admin@conectasus.com
+- **Senha:** password
+
+A API fica em http://localhost:8080/api
+
+### Outros comandos que usei 
+
+```bash
+docker compose down                                          # parar tudo
+docker compose exec app php artisan test                     # testes
+docker compose exec app composer install                     # deps PHP
+docker compose exec frontend npm run build                   # rebuild da SPA
+```
+
+---
+
+## O que tem no sistema
+
+Tem login/logout, um dashboard com os totais, e CRUD completo de endereços e pacientes. Nas listagens dá pra buscar, filtrar, ordenar e paginar. Nos formulários tem máscara de CPF, telefone, CEP, e o endereço preenche sozinho pelo ViaCEP.
+
+Implementei as regras de negócio do PDF (RN-01 a RN-09). A mais visível na interface é a RN-03: não deixa excluir um endereço que ainda tem paciente vinculado.
+
+---
+
+## Testes
+
+```bash
+docker compose exec app php artisan test
+```
+
+---
+
+## Estrutura do projeto
+
+```
+backend/          → API Laravel
+frontend/         → SPA Vue.js
+nginx/            → config do proxy reverso
+docker-compose.yml
+```
+
+Os containers são: `app` (PHP-FPM), `nginx` (porta 8080), `db` (MySQL 8) e `frontend` (Node, pra build da SPA).
+
