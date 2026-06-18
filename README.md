@@ -41,13 +41,19 @@ O `.env.example` já vem configurado pro Docker (`DB_HOST=db`, credenciais do ba
 docker compose up -d --build
 ```
 
-### 4. Gerar a chave da aplicação (primeira vez)
+### 4. Criar tabelas e popular o banco
+
+```bash
+docker compose exec app php artisan migrate:fresh --seed
+```
+
+### 5. Gerar a chave da aplicação
 
 ```bash
 docker compose exec app php artisan key:generate
 ```
 
-### 5. Build do frontend
+### 6. Build do frontend
 
 O nginx serve os arquivos de `frontend/dist/`, então precisa compilar:
 
@@ -55,13 +61,14 @@ O nginx serve os arquivos de `frontend/dist/`, então precisa compilar:
 docker compose exec frontend npm run build
 ```
 
-As migrations e o seed rodam sozinhos quando o banco tá vazio — o entrypoint do container `app` cuida disso. Se precisar rodar de novo manualmente:
+Resumo dos comandos na ordem:
 
 ```bash
-docker compose exec app php artisan migrate --seed
+docker compose up -d --build
+docker compose exec app php artisan migrate:fresh --seed
+docker compose exec app php artisan key:generate
+docker compose exec frontend npm run build
 ```
-
-Pra zerar tudo e popular de novo: `docker compose exec app php artisan migrate:fresh --seed`
 
 Abre http://localhost:8080 e entra com:
 
